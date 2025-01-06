@@ -1,16 +1,14 @@
 import "./App.css";
-import { HashRouter, Route, Routes } from "react-router";
+import { HashRouter, Route, Routes, useRoutes } from "react-router";
 import MainLayout from "./Layout/MainLayout.tsx";
+import { routes } from "./router/index.tsx";
 
 function App() {
 
+  const element = useRoutes(routes);
   return (
     <>
-      <HashRouter>
-        <Routes>
-          <Route path="*" element={ <MainLayout />}/>
-        </Routes>
-      </HashRouter>
+      {element}
     </>
   );
 }

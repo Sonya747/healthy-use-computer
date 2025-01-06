@@ -1,24 +1,30 @@
 import React, { useState } from "react";
-import {
-  HomeOutlined,
-  LaptopOutlined,
-  LineChartOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
-  SettingOutlined,
-  UploadOutlined,
-  UserOutlined,
-  VideoCameraOutlined,
-} from "@ant-design/icons";
-import { Button, Layout, Menu, theme } from "antd";
+import { Button, Layout, Menu, MenuProps, theme } from "antd";
+import { RouteProp, routes } from "../router";
+import { Outlet, useNavigate } from "react-router";
 
 const { Header, Sider, Content } = Layout;
 
-const MainLayout: React.FC = () => {
+const MainLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
+  let navigate = useNavigate()
+
+
+  type MenuItem = Required<MenuProps>["items"][number];
+  function getMenuItem(route: RouteProp): MenuItem {
+    return {
+      key: route.path,
+      icon: route.icon,
+      // label: <NavLink to={route.path} className={({isActive}) => isActive?"ant-menu-title-content":"ant-menu-title-content"}></NavLink>
+      label: route.label,
+      onClick: ({key}) => {navigate(key)},
+    };
+  }
+
+  const menuitems = routes[0].children.map((route) => getMenuItem(route));
 
   return (
     <div
@@ -31,9 +37,9 @@ const MainLayout: React.FC = () => {
     >
       <Layout style={{ height: "100%", width: "100%" }}>
         <Header style={{ padding: 0 }}>
-            
-            <div style={{color:'white',fontWeight:'bold',fontSize:20}}>healthy use computer</div>
-
+          <div style={{ color: "white", fontWeight: "bolder", fontSize: 20 }}>
+            healthy use computer
+          </div>
         </Header>
         <Layout>
           <Sider
@@ -45,38 +51,7 @@ const MainLayout: React.FC = () => {
               theme="dark"
               mode="inline"
               defaultSelectedKeys={["1"]}
-              items={[
-                {
-                  key: 0,
-                  icon: <HomeOutlined />,
-                  label: "主页",
-                },
-                {
-                  key: "1",
-                  icon: <VideoCameraOutlined />,
-                  label: "监测模式",
-                },
-                {
-                  key: "2",
-                  icon: <LineChartOutlined />,
-                  label: "健康报告",
-                },
-                {
-                  key: "3",
-                  icon: <LaptopOutlined />,
-                  label: "屏幕设置",
-                },
-                //   {
-                //     key: "3",
-                //     icon: <UserOutlined />,
-                //     label: "用户",
-                //   },
-                {
-                  key: "4",
-                  icon: <SettingOutlined />,
-                  label: "设置",
-                },
-              ]}
+              items={menuitems}
             />
           </Sider>
           <Content
@@ -87,7 +62,7 @@ const MainLayout: React.FC = () => {
               borderRadius: borderRadiusLG,
             }}
           >
-            Content
+            <Outlet />
           </Content>
         </Layout>
       </Layout>
