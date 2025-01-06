@@ -1,3 +1,20 @@
+# 项目说明
+## 启动方法
+```
+npm install
+npm run dev
+## 开发日志
+2025.1.2
+使用```electron-vite-react```脚手架搭建项目
+1.3
+写了摄像头组件的demo，并用于采集数据
+1.5
+通过antd的Layout组件搭建主要布局
+1.6
+更新路由管理
+
+```
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
