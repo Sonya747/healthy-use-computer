@@ -1,4 +1,6 @@
+import CameraCapture from "../../components/CameraCapture";
+
 const Camera = () => {
-    return(<>camera</>)
+    return(<><CameraCapture/></>)
 }
 export default Camera;

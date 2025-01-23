@@ -44,12 +44,12 @@ export const routes: RouteProp[] = [
         label: "健康报告",
         icon: <LineChartOutlined />,
       },
-      {
-        path: "screen",
-        element: <Screen />,
-        label: "屏幕设置",
-        icon: <LaptopOutlined />,
-      },
+      // {
+      //   path: "screen",
+      //   element: <Screen />,
+      //   label: "屏幕设置",
+      //   icon: <LaptopOutlined />,
+      // },
       {
         path: "setting",
         element: <Setting />,
