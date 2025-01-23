@@ -3,6 +3,7 @@
 ```
 npm install
 npm run dev
+```
 ## 开发日志
 2025.1.2
 使用```electron-vite-react```脚手架搭建项目
@@ -12,8 +13,11 @@ npm run dev
 通过antd的Layout组件搭建主要布局
 1.6
 更新路由管理
+1.10
+稍微完善了CameraCapture组件，加入状态控制；
+websocket传输视频流数据
+后续考虑更改为全局状态控制，
 
-```
 
 # React + TypeScript + Vite
 
