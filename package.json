@@ -1,0 +1,19 @@
+{
+    "name": "health-use-computer",
+    "version": "1.0.0",
+    "private": true,
+    "main": "electron/main.ts",
+    "scripts": {
+        "start": "concurrently \"npm run start-backend\" \"npm run start-frontend\" \"npm run start-electron\"",
+        "start-backend": "cd backend && uvicorn main:app --reload --host localhost --port 8000",
+        "start-frontend": "cd frontend && npm run dev",
+        "start-electron": "electron electron/main.ts"
+    },
+    "devDependencies": {
+        "concurrently": "^7.0.0",
+        "electron": "^15.3.0"
+    },
+    "dependencies": {
+        "react-router-dom": "^7.1.5"
+    }
+}

@@ -1,0 +1,73 @@
+import React, { useState } from "react";
+import { Button, Layout, Menu, MenuProps, theme } from "antd";
+import { RouteProp, routes } from "../router";
+import { Outlet, useNavigate } from "react-router";
+
+const { Header, Sider, Content } = Layout;
+
+const MainLayout = () => {
+  const [collapsed, setCollapsed] = useState(false);
+  const {
+    token: { colorBgContainer, borderRadiusLG },
+  } = theme.useToken();
+  let navigate = useNavigate()
+
+
+  type MenuItem = Required<MenuProps>["items"][number];
+  function getMenuItem(route: RouteProp): MenuItem {
+    return {
+      key: route.path,
+      icon: route.icon,
+      // label: <NavLink to={route.path} className={({isActive}) => isActive?"ant-menu-title-content":"ant-menu-title-content"}></NavLink>
+      label: route.label,
+      onClick: ({key}) => {navigate(key)},
+    };
+  }
+
+  const menuitems = routes[0].children.map((route) => getMenuItem(route));
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100vh",
+        width: "100vw",
+      }}
+    >
+      <Layout style={{ height: "100%", width: "100%" }}>
+        <Header style={{ padding: 0 }}>
+          <div style={{ color: "white", fontWeight: "bolder", fontSize: 20 }}>
+            healthy use computer
+          </div>
+        </Header>
+        <Layout>
+          <Sider
+            collapsible
+            collapsed={collapsed}
+            onCollapse={(value) => setCollapsed(value)}
+          >
+            <Menu
+              theme="dark"
+              mode="inline"
+              defaultSelectedKeys={["1"]}
+              items={menuitems}
+            />
+          </Sider>
+          <Content
+            style={{
+              padding: "24px",
+              minHeight: 280,
+              background: colorBgContainer,
+              borderRadius: borderRadiusLG,
+            }}
+          >
+            <Outlet />
+          </Content>
+        </Layout>
+      </Layout>
+    </div>
+  );
+};
+
+export default MainLayout;
