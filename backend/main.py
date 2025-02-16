@@ -1,8 +1,11 @@
-from fastapi import FastAPI
+import asyncio
+from datetime import datetime
+from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
+from utils.webcam import mock_eye_detection
 
+app = FastAPI()
 # Set up CORS
 app.add_middleware(
     CORSMiddleware,
@@ -11,6 +14,45 @@ app.add_middleware(
     allow_methods=["*"],  # Allow all methods
     allow_headers=["*"],  # Allow all headers
 )
+
+@app.websocket("/ws/video")
+async def eye_analysis_websocket(websocket: WebSocket):
+    """
+    WebSocket视频分析接口
+    协议流程:
+    1. 客户端建立连接
+    2. 持续发送视频帧（二进制数据）
+    3. 服务端返回EyeState JSON
+    """
+    await websocket.accept()
+    try:
+        while True:
+            # 接收二进制视频帧
+            frame_data = await websocket.receive_bytes()
+            
+            # 处理视频帧（此处需实现实际算法）
+            analysis_result = await mock_eye_detection(frame_data)
+            
+            # 发送分析结果
+            await websocket.send_json(analysis_result.dict())
+            
+    except Exception as e:
+        print(f"连接异常断开: {str(e)}")
+    finally:
+        await websocket.close()
+
+
+# ========================
+# HTTP辅助接口
+# ========================
+@app.get("/health")
+async def health_check() -> dict:
+    """服务健康检查"""
+    return {
+        "status": "active",
+        "timestamp": datetime.now().isoformat()
+    }
+
 
 @app.get("/data")
 def read_data():

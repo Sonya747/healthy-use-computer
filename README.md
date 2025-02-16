@@ -36,7 +36,28 @@ websocket传输视频流数据；
 后续考虑变更布局
 
 
+主要功能数据传输结构：
+```mermaid
+sequenceDiagram
+    participant F as React前端
+    participant B as FastAPI后端
+    F->>B: WebSocket连接建立
+    loop 持续传输
+        F->>B: 发送视频帧数据
+        B-->>F: 返回眼部状态JSON
+    end
+    F->>B: HTTP配置更新
+    B-->>F: 返回操作结果
+```
 
+
+视频流处理队列架构
+```mermaid
+graph LR
+    A[客户端] -->|WebSocket推送| B(FastAPI)
+    B -->|Redis队列| C[处理Worker]
+    C -->|结果回传| A
+```
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
