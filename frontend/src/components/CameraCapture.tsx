@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-// import io from "socket.io-client";
+import io from "socket.io-client";
 import { VideoCameraOutlined } from "@ant-design/icons";
+import { wsUrl } from "../constants/api";
 /* 摄像头组件
 调用摄像头，显示画面，生成Base64数据
  */
@@ -10,19 +11,43 @@ const CameraCapture = () => {
   const [isCameraOn, setIsCameraOn] = useState(false);
   const socketRef = useRef(null);
 
-  // useEffect(() => {
-  //   //TODO socket.io server url
-  //   socketRef.current = io("http://websocket-server-url");
-  //   // 监听后端消息
-  //   socketRef.current.on("message-from-backend", (message) => {
-  //     console.log("Message ", message);
-  //   });
-  //   return () => {
-  //     if (socketRef.current) {
-  //       socketRef.current.disconnect();
-  //     }
-  //   };
-  // }, []);
+  useEffect(() => {
+    if (!isCameraOn) {
+      if (socketRef.current) {
+        socketRef.current.disconnect()
+      };
+      stopCamera();
+      return;
+    }
+    //TODO socket.io server url
+    socketRef.current = io(wsUrl);
+    // 监听后端消息
+    socketRef.current.on("message-from-backend", (message) => {
+      console.log("Message ", message);
+    });
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
+    };
+  }, [isCameraOn]);
+
+
+
+  useEffect(() => {
+    if (!isCameraOn && stream) {
+      stream.getTracks().forEach(track => track.stop());
+      setStream(null);
+    }
+  }, [isCameraOn, stream]);
+
+  const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach((track) => track.stop());
+      setStream(null);
+      setIsCameraOn(false);
+    }
+  };
 
   const startCamera = async () => {
     try {
@@ -41,22 +66,8 @@ const CameraCapture = () => {
   };
 
 
-  useEffect(() => {
-    if (!isCameraOn && stream) {
-        stream.getTracks().forEach(track => track.stop());
-        setStream(null);
-    }
-    console.log(isCameraOn, stream)
-}, [isCameraOn, stream]);
 
-  const stopCamera = () => {
-    if (stream) {
-      stream.getTracks().forEach((track) => track.stop());
-      setStream(null);
-      setIsCameraOn(false);
-    }
-  };
-
+  //TODO
   const sendVideoStream = () => {
     const canvas = document.createElement("canvas");
     const context = canvas.getContext("2d");
@@ -77,9 +88,9 @@ const CameraCapture = () => {
 
   return (
     <div>
-      <video ref={videoRef} height={500} style={{padding:'8px'}} autoPlay >
+      <video ref={videoRef} height={500} style={{ padding: '8px' }} autoPlay >
         <VideoCameraOutlined />
-        </video>
+      </video>
       {!isCameraOn ? (
         <button onClick={startCamera}>开启监测</button>
       ) : (

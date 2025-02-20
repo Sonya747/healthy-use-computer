@@ -1,0 +1,17 @@
+.videoWrapper{
+    display: flex;
+    /* min-height: 400px;
+    min-width: 500px; */
+    width: 100%;
+    
+    video{
+        flex-shrink: 1;
+        width: 100%;
+        height: 100%;
+    }
+}
+.wrapper{
+    display: flex;
+    padding: 8px;
+    flex-direction: column;
+}

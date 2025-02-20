@@ -15,6 +15,7 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 
+
 @app.websocket("/ws/video")
 async def eye_analysis_websocket(websocket: WebSocket):
     """

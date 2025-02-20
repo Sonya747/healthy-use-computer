@@ -58,6 +58,39 @@ graph LR
     B -->|Redis队列| C[处理Worker]
     C -->|结果回传| A
 ```
+
+图像编码处理可能的解决
+```python
+def process_base64_image(base64_str: str) -> np.ndarray:
+    """处理前端发送的Base64图像数据"""
+    try:
+        # 分离数据头
+        if "," not in base64_str:
+            raise ValueError("Invalid base64 format")
+        header, data = base64_str.split(",", 1)
+        
+        # Base64解码
+        img_bytes = base64.b64decode(data)
+        nparr = np.frombuffer(img_bytes, dtype=np.uint8)
+        
+        # OpenCV解码
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        if img is None:
+            raise ValueError("Failed to decode image")
+            
+        # 格式转换
+        rgb_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        
+        # 尺寸调整
+        if rgb_img.shape != (450, 450, 3):
+            rgb_img = cv2.resize(rgb_img, (450, 450))
+            
+        return rgb_img
+        
+    except Exception as e:
+        print(f"图像处理失败: {str(e)}")
+        raise
+```
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
