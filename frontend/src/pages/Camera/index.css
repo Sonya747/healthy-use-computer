@@ -1,17 +1,136 @@
-.videoWrapper{
+.camera-container {
     display: flex;
-    /* min-height: 400px;
-    min-width: 500px; */
-    width: 100%;
-    
-    video{
-        flex-shrink: 1;
-        width: 100%;
-        height: 100%;
-    }
-}
-.wrapper{
-    display: flex;
-    padding: 8px;
     flex-direction: column;
+    width: 100%;
+    height: 100%;
 }
+
+.video-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    /* 默认背景色 */
+}
+
+.video-element {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    /* 保持原始比例 */
+    transform: scaleX(-1);
+    /* 镜像翻转 */
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+    cursor: pointer;
+    flex-shrink: 1;
+    background: transparent;
+    /* 移除默认黑色背景 */
+    &.disconnected {
+        opacity: 0 !important;
+        filter: grayscale(1);
+        visibility: hidden; /* 完全隐藏视频元素 */
+      }
+}
+
+.video-element:hover {
+    filter: blur(2px);
+}
+
+.icon-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    &:hover {
+        opacity: 1;
+        background: rgba(0, 0, 0, 0.3);
+        /* 半透明遮罩层 */
+    }
+
+}
+
+.center-icon {
+    font-size: 32px;
+    color: white;
+    cursor: pointer;
+}
+
+.disconnected-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 48px;
+    color: rgba(0, 0, 0, 0.15);
+}
+
+/* TODO 没有生效 */
+.video-element:not([src])::after {
+    /* 无视频源时显示图标 */
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 64px;
+    height: 64px;
+    /* background: currentColor; */
+    mask: url("data:image/svg+xml,<svg viewBox='0 0 1024 1024' xmlns='http://www.w3.org/2000/svg'><path d='M864 248H728l-70.4-90.3a32.07 32.07 0 0 0-25.5-13.7H392c-10 0-19.3 5-25 13.3L296 248H160c-44.2 0-80 35.8-80 80v456c0 44.2 35.8 80 80 80h704c44.2 0 80-35.8 80-80V328c0-44.2-35.8-80-80-80zM512 716c-88.2 0-160-71.8-160-160s71.8-160 160-160 160 71.8 160 160-71.8 160-160 160zm-96-160a96 96 0 1 0 192 0 96 96 0 1 0-192 0z'/></svg>") no-repeat center;
+    mask-size: 100%;
+    /* background-color: #666; */
+}
+
+
+/* .video-element::after {
+    content: 'Click to start/stop camera';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    display: none;
+    z-index: 1;
+} */
+
+/* .video-element.connected::after {
+    display: none;
+}
+
+.video-element:not(.connected)::after {
+    display: block;
+} */
+
+/* .controls {
+    padding: 20px;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.7);
+} */
+/* 
+.control-button {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 4px;
+    background: #1890ff;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.control-button:hover {
+    background: #40a9ff;
+} */
