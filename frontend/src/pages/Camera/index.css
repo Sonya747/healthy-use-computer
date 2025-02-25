@@ -3,6 +3,7 @@
     flex-direction: column;
     width: 100%;
     height: 100%;
+    
 }
 
 .video-container {
@@ -12,7 +13,9 @@
     align-items: center;
     position: relative;
     overflow: hidden;
-    /* 默认背景色 */
+    display: flex;
+    height: 100%;
+    width: 100%;
 }
 
 .video-element {
@@ -77,21 +80,6 @@
     color: rgba(0, 0, 0, 0.15);
 }
 
-/* TODO 没有生效 */
-.video-element:not([src])::after {
-    /* 无视频源时显示图标 */
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 64px;
-    height: 64px;
-    /* background: currentColor; */
-    mask: url("data:image/svg+xml,<svg viewBox='0 0 1024 1024' xmlns='http://www.w3.org/2000/svg'><path d='M864 248H728l-70.4-90.3a32.07 32.07 0 0 0-25.5-13.7H392c-10 0-19.3 5-25 13.3L296 248H160c-44.2 0-80 35.8-80 80v456c0 44.2 35.8 80 80 80h704c44.2 0 80-35.8 80-80V328c0-44.2-35.8-80-80-80zM512 716c-88.2 0-160-71.8-160-160s71.8-160 160-160 160 71.8 160 160-71.8 160-160 160zm-96-160a96 96 0 1 0 192 0 96 96 0 1 0-192 0z'/></svg>") no-repeat center;
-    mask-size: 100%;
-    /* background-color: #666; */
-}
 
 
 /* .video-element::after {

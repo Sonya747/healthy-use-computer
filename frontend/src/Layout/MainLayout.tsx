@@ -31,8 +31,10 @@ const MainLayout = () => {
       style={{
         display: "flex",
         flexDirection: "column",
-        height: "100vh",
-        width: "100vw",
+        height: "100%",
+        width: "100%",
+        minWidth:'100wh',
+        minHeight:'100vh'
       }}
     >
       <Layout style={{ height: "100%", width: "100%" }}>
@@ -52,6 +54,7 @@ const MainLayout = () => {
               mode="inline"
               defaultSelectedKeys={["1"]}
               items={menuitems}
+              style={{height:'100%'}}
             />
           </Sider>
           <Content

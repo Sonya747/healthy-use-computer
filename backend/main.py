@@ -25,7 +25,9 @@ async def eye_analysis_websocket(websocket: WebSocket):
     2. 持续发送视频帧（二进制数据）
     3. 服务端返回EyeState JSON
     """
+    print("111")
     await websocket.accept()
+    print("222")
     try:
         while True:
             # 接收二进制视频帧
@@ -33,9 +35,9 @@ async def eye_analysis_websocket(websocket: WebSocket):
             
             # 处理视频帧（此处需实现实际算法）
             analysis_result = await mock_eye_detection(frame_data)
-            
+            # print(analysis_result)
             # 发送分析结果
-            await websocket.send_json(analysis_result.dict())
+            await websocket.send_json(analysis_result)
             
     except Exception as e:
         print(f"连接异常断开: {str(e)}")
