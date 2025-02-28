@@ -5,6 +5,7 @@ import { ClockCircleOutlined, AlertOutlined, EyeOutlined, DashboardOutlined } fr
 const { Title, Text } = Typography;
 
 const Report = () => {
+  
   // 示例数据
   const usageData = [
     { time: '00:00', value: 0 },
