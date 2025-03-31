@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { PlayCircleOutlined, StopOutlined, VideoCameraOutlined } from "@ant-design/icons";
+import { VideoCameraOutlined } from "@ant-design/icons";
 import { wsUrl } from "../../constants/api";
 import './index.css';
 import { message } from "antd";
@@ -10,7 +10,6 @@ const Camera = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [isCameraOn, setIsCameraOn] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
   const socketRef = useRef<WebSocket | null>(null);
   const [playSound] =useSound(sound,{volume:0.5})
 
@@ -79,6 +78,9 @@ const Camera = () => {
     } catch (err) {
       console.error("video stream error", err);
     }
+    setTimeout(() => {
+      message.info("歪头");
+    }, 10000);
   };
 
   const sendVideoStream = () => {
@@ -104,7 +106,7 @@ const Camera = () => {
   };
 
   const handleVideoConnect = () => {
-    setIsConnected(true);
+    // setIsConnected(true);
     if (videoRef.current) {
       videoRef.current.play().catch(error => {
         console.error('视频自动播放失败:', error);
@@ -201,33 +203,14 @@ const Camera = () => {
             cursor: 'pointer',
             transition: 'all 0.3s',
             opacity: 0.8,
-            ':hover': {
-              opacity: 1,
-              transform: 'translate(-50%, -50%) scale(1.1)'
-            }
+            // ':hover': {
+            //   opacity: 1,
+            //   transform: 'translate(-50%, -50%) scale(1.1)'
+            // }
           }}
           // onClick={isCameraOn ? stopCamera : startCamera}
         >
-          {isCameraOn ? (
-            <StopOutlined style={{
-              fontSize: 48,
-              color: '#ff4d4f',
-              background: 'rgba(255, 255, 255, 0.9)',
-              borderRadius: '50%',
-              padding: 16,
-              boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-            }} />
-          ) : (
-            // <PlayCircleOutlined style={{
-            //   fontSize: 48,
-            //   color: '#52c41a',
-            //   background: 'rgba(255, 255, 255, 0.9)',
-            //   borderRadius: '50%',
-            //   padding: 16,
-            //   boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-            // }} />
-            <></>
-          )}
+
         </div>
   
         {/* 未连接时的占位符 */}

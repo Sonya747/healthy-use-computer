@@ -2,10 +2,17 @@ import asyncio
 from datetime import datetime
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
-
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from database import Base
+from modals.modals import ScreenSession
 from utils.webcam import mock_eye_detection
 
 app = FastAPI()
+#数据库配置
+engine = create_engine('sqlite:///./usage.db')
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
 # Set up CORS
 app.add_middleware(
     CORSMiddleware,
@@ -14,6 +21,11 @@ app.add_middleware(
     allow_methods=["*"],  # Allow all methods
     allow_headers=["*"],  # Allow all headers
 )
+
+# 初始化数据库（首次运行时创建表）
+@app.on_event("startup")
+def init_db():
+    Base.metadata.create_all(bind=engine)
 
 
 @app.websocket("/ws/video")
@@ -25,9 +37,7 @@ async def eye_analysis_websocket(websocket: WebSocket):
     2. 持续发送视频帧（二进制数据）
     3. 服务端返回EyeState JSON
     """
-    print("111")
     await websocket.accept()
-    print("222")
     try:
         while True:
             # 接收二进制视频帧
@@ -45,18 +55,23 @@ async def eye_analysis_websocket(websocket: WebSocket):
         await websocket.close()
 
 
-# ========================
-# HTTP辅助接口
-# ========================
-@app.get("/health")
-async def health_check() -> dict:
-    """服务健康检查"""
-    return {
-        "status": "active",
-        "timestamp": datetime.now().isoformat()
-    }
 
+# 开始使用记录
+@app.post("/session/start")
+def start_session():
+    db = SessionLocal()
+    session = ScreenSession(start_time=datetime.datetime.now())
+    db.add(session)
+    db.commit()
+    return {"session_id": session.id}
 
-@app.get("/data")
-def read_data():
-    return {"message": "Hello from FastAPI"}
+# 结束使用记录
+@app.post("/session/end")
+def end_session():
+    db = SessionLocal()
+    session = db.query(ScreenSession).order_by(ScreenSession.id.desc()).first()
+    if session:
+        session.end_time = datetime.datetime.now()
+        session.total_duration = int((session.end_time - session.start_time).total_seconds())
+        db.commit()
+    return {"status": "ok"}

@@ -1,5 +1,19 @@
 from datetime import datetime
 
+#三个角度位置定义
+#TODO 命名,
+class Position:
+    front:int
+    left:int
+    right:int
+
+#TODO 命名
+class PositionState:
+    position:Position
+    confidence:float
+    timestamp:datetime
+
+
 # TODO 实际算法
 
 async def process_video_frame(frame_data: bytes) -> dict:
@@ -19,3 +33,12 @@ async def mock_eye_detection(frame: bytes) -> dict:
         "confidence": 0.95,
         "timestamp": datetime.now().isoformat()
     }
+
+async def get_position_state(frame: bytes) -> PositionState:
+    """获取当前头部位置状态"""
+    #TODO 实际算法
+    return PositionState(
+        position=Position(front=0, left=0, right=0),
+        confidence=0.95,
+        timestamp=datetime.now().isoformat()
+    )

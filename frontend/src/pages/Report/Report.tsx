@@ -46,7 +46,11 @@ const Report = () => {
     colorField: 'type',
     radius: 0.8,
     label: {
+      type: 'inner',
       content: '{name} | {percentage}',
+      formatter: (datum) => {
+        return `${datum.type} | ${(datum.value / alertData.reduce((acc, item) => acc + item.value, 0) * 100).toFixed(2)}%`;
+      },
     },
     color: ['#ff4d4f', '#faad14', '#52c41a', '#1890ff'],
     interactions: [{ type: 'element-active' }],
@@ -93,7 +97,7 @@ const Report = () => {
             <Timeline mode="alternate">
               <Timeline.Item color="green">连续健康天数 +3</Timeline.Item>
               {/* <Timeline.Item color="red">周三久坐超标</Timeline.Item> */}
-              <Timeline.Item color="green">达成饮水目标 5/7</Timeline.Item>
+              {/* <Timeline.Item color="green">达成饮水目标 5/7</Timeline.Item> */}
               <Timeline.Item color="gold">日平均休息次数 6.8</Timeline.Item>
             </Timeline>
           </Card>
@@ -124,17 +128,17 @@ const Report = () => {
             style={{ borderRadius: 15 }}
           >
             <Pie {...pieConfig} />
-            <Divider />
-            <Row gutter={16}>
-              <Col span={12}>
+            {/* <Divider /> */}
+            {/* <Row gutter={16}>
+              <Col span={8}>
                 <Text strong>最常提醒类型：</Text>
                 <Tag color="red">姿势提醒 (12次)</Tag>
               </Col>
-              <Col span={12}>
+              <Col span={8}>
                 <Text strong>提醒响应率：</Text>
                 <Progress percent={78} size="small" />
               </Col>
-            </Row>
+            </Row> */}
           </Card>
         </Col>
 

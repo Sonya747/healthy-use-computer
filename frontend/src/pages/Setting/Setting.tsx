@@ -37,7 +37,7 @@ const Setting = () => {
     const initialValues = params.reduce((acc, param) => {
         acc[param.value] = param.defaultValue;
         return acc;
-    }, { reminderMethod: 'email' });
+    }, { reminderMethod: '静默通知' });
 
     const onFinish = (values: any) => {
         console.log('Received values from form: ', values);
