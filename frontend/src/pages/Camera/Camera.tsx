@@ -1,17 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import { VideoCameraOutlined } from "@ant-design/icons";
-import { wsUrl } from "../../constants/api";
 import './index.css';
 import { message } from "antd";
 import useSound from "use-sound";
-import sound from '@/assets/audio/notification.wav'
+import sound from '@/assets/audio/notification.wav';
+import { createEyeAnalysisWebSocket } from '../../api/video';
+import { EyeState } from '../../api/types';
+import { endSession, startSession } from '../../api/usage';
 
 const Camera = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [isCameraOn, setIsCameraOn] = useState(false);
   const socketRef = useRef<WebSocket | null>(null);
-  const [playSound] =useSound(sound,{volume:0.5})
+  const [playSound] = useSound(sound, { volume: 0.5 });
 
   useEffect(() => {
     if (!isCameraOn) {
@@ -20,10 +22,11 @@ const Camera = () => {
       return;
     }
 
-    const ws = new WebSocket(wsUrl);
-    ws.onopen = handleWebSocketOpen;
-    ws.onmessage = handleWebSocketMessage;
-    ws.onerror = handleWebSocketError;
+    const ws = createEyeAnalysisWebSocket({
+      onOpen: handleWebSocketOpen,
+      onMessage: handleWebSocketMessage,
+      onError: handleWebSocketError
+    });
 
     socketRef.current = ws;
 
@@ -37,13 +40,10 @@ const Camera = () => {
     sendVideoStream();
   };
 
-  const handleWebSocketMessage = (event: MessageEvent) => {
-    const data = JSON.parse(event.data);
+  const handleWebSocketMessage = (data: EyeState) => {
     console.log('分析结果:', data);
-    // {eye_state: 'open', confidence: 0.95, timestamp: '2025-02-23T17:10:20.405124'}
-    //TODO 信息反馈，提示方式
-    if(data.eye_state === 'close') {
-      playSound()
+    if (!data.isEyeOpen) {
+      playSound();
     }
   };
 
@@ -57,13 +57,16 @@ const Camera = () => {
     }
   };
 
-  const stopCamera = () => {
-    if (stream) {
+  const stopCamera = async () => {
+    if (stream && isCameraOn) {
       stream.getTracks().forEach((track) => track.stop());
       setStream(null);
       setIsCameraOn(false);
       message.info("监测模式结束");
+      const res = await endSession();
+      console.log("endSession",res); //TODO 获取session_id 后续删掉
     }
+
   };
 
   const startCamera = async () => {
@@ -74,6 +77,8 @@ const Camera = () => {
         videoRef.current.srcObject = stream;
       }
       setIsCameraOn(true);
+      const res = await startSession();
+      console.log("startSession",res); //TODO 获取session_id 后续删掉
       message.success("检测模式开启");
     } catch (err) {
       console.error("video stream error", err);
@@ -114,30 +119,9 @@ const Camera = () => {
     }
   };
 
-  // return (
-  //   <div className="camera-container">
-  //     <div className="video-container">
-  //       <video
-  //         ref={videoRef}
-  //         autoPlay
-  //         className={`video-element ${isCameraOn ? 'connected' : 'disconnected'}`}
-  //         onCanPlay={handleVideoConnect}
-  //         onClick={isCameraOn ? stopCamera : startCamera}
-  //       >
-  //         {<VideoCameraOutlined className="disconnected-icon" />}
-  //       </video>
-  //       {/* <div className="icon-overlay">
-  //         <div className="center-icon">
-  //           {isCameraOn ? <StopOutlined /> : <PlayCircleOutlined />}
-  //         </div>
-  //       </div> */}
-  //     </div>
-  //   </div>
-  // );
-
   return (
     <div className="camera-container" style={{ padding: 24, background: '#f0f2f5' }}>
-      <div 
+      <div
         className="video-container"
         style={{
           position: 'relative',
@@ -165,7 +149,7 @@ const Camera = () => {
           onCanPlay={handleVideoConnect}
           onClick={isCameraOn ? stopCamera : startCamera}
         />
-  
+
         {/* 状态指示层 */}
         <div style={{
           position: 'absolute',
@@ -183,18 +167,18 @@ const Camera = () => {
             boxShadow: `0 0 8px ${isCameraOn ? 'rgba(82, 196, 26, 0.4)' : 'rgba(255, 77, 79, 0.4)'}`,
             animation: 'breathing 1.5s infinite'
           }} />
-          <span style={{ 
-            color: 'white', 
+          <span style={{
+            color: 'white',
             textShadow: '0 2px 4px rgba(0,0,0,0.5)',
             fontSize: 14
           }}>
             {isCameraOn ? '监测中' : '已暂停'}
           </span>
         </div>
-  
+
         {/* 中心控制按钮 */}
-        <div 
-        className="control"
+        <div
+          className="control"
           style={{
             position: 'absolute',
             top: '50%',
@@ -208,11 +192,11 @@ const Camera = () => {
             //   transform: 'translate(-50%, -50%) scale(1.1)'
             // }
           }}
-          // onClick={isCameraOn ? stopCamera : startCamera}
+        // onClick={isCameraOn ? stopCamera : startCamera}
         >
 
         </div>
-  
+
         {/* 未连接时的占位符 */}
         {!isCameraOn && (
           <div style={{
@@ -225,9 +209,9 @@ const Camera = () => {
             alignItems: 'center',
             justifyContent: 'center',
             background: 'radial-gradient(circle, #434343 0%, #262626 100%)',
-            cursor:"pointer"
+            cursor: "pointer"
           }}
-          onClick={isCameraOn ? stopCamera : startCamera}
+            onClick={isCameraOn ? stopCamera : startCamera}
 
           >
             <VideoCameraOutlined style={{
@@ -238,7 +222,7 @@ const Camera = () => {
           </div>
         )}
       </div>
-  
+
       {/* 全局动画定义 */}
       <style>
         {`

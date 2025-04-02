@@ -1,7 +1,5 @@
 from sqlalchemy import Column, Integer, String, DateTime, JSON, Boolean, Enum
-from sqlalchemy.ext.declarative import declarative_base
-
-Base = declarative_base()
+from database import Base
 
 # 屏幕使用时间
 class ScreenSession(Base):

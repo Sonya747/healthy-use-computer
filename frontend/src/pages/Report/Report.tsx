@@ -1,6 +1,8 @@
 import { Row, Col, Card, Typography, Timeline, Progress, Tag, Divider, Space } from 'antd';
 import { Bar, Pie } from '@ant-design/charts';
 import { ClockCircleOutlined, AlertOutlined, EyeOutlined, DashboardOutlined } from '@ant-design/icons';
+import { useEffect } from 'react';
+import { getDailyReport } from '../../api/usage';
 
 const { Title, Text } = Typography;
 
@@ -56,6 +58,11 @@ const Report = () => {
     interactions: [{ type: 'element-active' }],
   };
 
+  useEffect(() => {
+    getDailyReport().then((res) => {
+      console.log(res);
+    })
+  }, [])
   return (
     <div style={{ padding: '24px', background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)' }}>
       <Row gutter={[24, 24]}>
