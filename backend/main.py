@@ -1,6 +1,6 @@
 import asyncio
 from datetime import datetime
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI, WebSocket, File, UploadFile, Body
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
@@ -33,33 +33,19 @@ def init_db():
 # 获取模型路径
 MODEL_PATH = os.path.join(os.path.dirname(__file__), 'cvmodals', 'resnet34.onnx')
 
-@app.websocket("/ws/video")
-async def eye_analysis_websocket(websocket: WebSocket):
+@app.post("/video/analyze")
+async def analyze_video_frame(frame_data: bytes = Body(...)):
     """
-    WebSocket视频分析接口
-    协议流程:
-    1. 客户端建立连接
-    2. 持续发送视频帧（二进制数据）
-    3. 服务端返回预测结果
+    HTTP视频分析接口
+    接收视频帧并返回分析结果
     """
-    await websocket.accept()
     try:
-        while True:
-            # 接收二进制视频帧
-            frame_data = await websocket.receive_bytes()
-            
-            # 使用模型处理图像
-            analysis_result = process_image(MODEL_PATH, frame_data)
-            
-            # 发送分析结果
-            await websocket.send_json(analysis_result)
-            
+        # 使用模型处理图像
+        analysis_result = process_image(MODEL_PATH, frame_data)
+        return analysis_result
     except Exception as e:
-        print(f"连接异常断开: {str(e)}")
-    finally:
-        await websocket.close()
-
-
+        print(f"分析失败: {str(e)}")
+        return {"error": str(e)}
 
 # 开始使用记录
 @app.post("/session/start")

@@ -4,56 +4,61 @@ import './index.css';
 import { message } from "antd";
 import useSound from "use-sound";
 import sound from '@/assets/audio/notification.wav';
-import { createEyeAnalysisWebSocket } from '../../api/video';
 import { EyeState } from '../../api/types';
 import { endSession, startSession } from '../../api/usage';
+import axios from 'axios';
 
 const Camera = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [isCameraOn, setIsCameraOn] = useState(false);
-  const socketRef = useRef<WebSocket | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const [playSound] = useSound(sound, { volume: 0.5 });
 
   useEffect(() => {
     if (!isCameraOn) {
-      closeWebSocket();
       stopCamera();
       return;
     }
 
-    const ws = createEyeAnalysisWebSocket({
-      onOpen: handleWebSocketOpen,
-      onMessage: handleWebSocketMessage,
-      onError: handleWebSocketError
-    });
-
-    socketRef.current = ws;
-
     return () => {
-      closeWebSocket();
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
     };
   }, [isCameraOn]);
 
-  const handleWebSocketOpen = () => {
-    console.log('WebSocket已连接');
-    sendVideoStream();
-  };
+  const analyzeFrame = async () => {
+    if (!videoRef.current) return;
 
-  const handleWebSocketMessage = (data: EyeState) => {
-    console.log('分析结果:', data);
-    if (!data.isEyeOpen) {
-      playSound();
-    }
-  };
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    if (!context) return;
 
-  const handleWebSocketError = (error: Event) => {
-    console.error('WebSocket错误:', error);
-  };
+    canvas.width = videoRef.current.videoWidth;
+    canvas.height = videoRef.current.videoHeight;
+    context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
 
-  const closeWebSocket = () => {
-    if (socketRef.current?.readyState === WebSocket.OPEN) {
-      socketRef.current.close();
+    try {
+      const blob = await new Promise<Blob>((resolve) => {
+        canvas.toBlob((blob) => {
+          if (blob) resolve(blob);
+        }, 'image/jpeg', 0.7);
+      });
+
+      const response = await axios.post('http://localhost:8000/video/analyze', blob, {
+        headers: {
+          'Content-Type': 'application/octet-stream'
+        }
+      });
+
+      const data = response.data as EyeState;
+      console.log('分析结果:', data);
+      if (!data.isEyeOpen) {
+        playSound();
+      }
+    } catch (error) {
+      console.error('分析失败:', error);
     }
   };
 
@@ -62,11 +67,14 @@ const Camera = () => {
       stream.getTracks().forEach((track) => track.stop());
       setStream(null);
       setIsCameraOn(false);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
       message.info("监测模式结束");
       const res = await endSession();
-      console.log("endSession",res); //TODO 获取session_id 后续删掉
+      console.log("endSession", res);
     }
-
   };
 
   const startCamera = async () => {
@@ -78,40 +86,17 @@ const Camera = () => {
       }
       setIsCameraOn(true);
       const res = await startSession();
-      console.log("startSession",res); //TODO 获取session_id 后续删掉
+      console.log("startSession", res);
       message.success("检测模式开启");
+      // 设置定时器，每1s发送一帧
+      intervalRef.current = setInterval(analyzeFrame, 1000);
+      
     } catch (err) {
       console.error("video stream error", err);
     }
-    setTimeout(() => {
-      message.info("歪头");
-    }, 10000);
-  };
-
-  const sendVideoStream = () => {
-    const canvas = document.createElement("canvas");
-    const context = canvas.getContext("2d");
-
-    const sendFrame = () => {
-      if (videoRef.current && isCameraOn && socketRef.current?.readyState === WebSocket.OPEN) {
-        canvas.width = videoRef.current.videoWidth;
-        canvas.height = videoRef.current.videoHeight;
-        context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-
-        canvas.toBlob(blob => {
-          if (blob) {
-            socketRef.current.send(blob);
-          }
-        }, 'image/jpeg', 0.7);
-
-        requestAnimationFrame(sendFrame);
-      }
-    };
-    sendFrame();
   };
 
   const handleVideoConnect = () => {
-    // setIsConnected(true);
     if (videoRef.current) {
       videoRef.current.play().catch(error => {
         console.error('视频自动播放失败:', error);
