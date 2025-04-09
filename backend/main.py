@@ -6,7 +6,8 @@ from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 from database import Base
 from modals.modals import AlertEvent, ScreenSession
-from utils.webcam import mock_eye_detection
+from cvmodals.predict import process_image
+import os
 
 app = FastAPI()
 #数据库配置
@@ -29,6 +30,8 @@ app.add_middleware(
 def init_db():
     Base.metadata.create_all(bind=engine)
 
+# 获取模型路径
+MODEL_PATH = os.path.join(os.path.dirname(__file__), 'cvmodals', 'resnet34.pth')
 
 @app.websocket("/ws/video")
 async def eye_analysis_websocket(websocket: WebSocket):
@@ -37,7 +40,7 @@ async def eye_analysis_websocket(websocket: WebSocket):
     协议流程:
     1. 客户端建立连接
     2. 持续发送视频帧（二进制数据）
-    3. 服务端返回EyeState JSON
+    3. 服务端返回预测结果
     """
     await websocket.accept()
     try:
@@ -45,9 +48,9 @@ async def eye_analysis_websocket(websocket: WebSocket):
             # 接收二进制视频帧
             frame_data = await websocket.receive_bytes()
             
-            # 处理视频帧（此处需实现实际算法）
-            analysis_result = await mock_eye_detection(frame_data)
-            # print(analysis_result)
+            # 使用模型处理图像
+            analysis_result = process_image(MODEL_PATH, frame_data)
+            
             # 发送分析结果
             await websocket.send_json(analysis_result)
             
