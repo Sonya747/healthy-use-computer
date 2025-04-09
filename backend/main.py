@@ -31,7 +31,7 @@ def init_db():
     Base.metadata.create_all(bind=engine)
 
 # 获取模型路径
-MODEL_PATH = os.path.join(os.path.dirname(__file__), 'cvmodals', 'resnet34.pth')
+MODEL_PATH = os.path.join(os.path.dirname(__file__), 'cvmodals', 'resnet34.onnx')
 
 @app.websocket("/ws/video")
 async def eye_analysis_websocket(websocket: WebSocket):
