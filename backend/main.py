@@ -4,6 +4,7 @@ from fastapi import FastAPI, WebSocket, File, UploadFile, Body
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
+from cvmodals.eye_predict import predict_eye
 from database import Base
 from modals.modals import AlertEvent, ScreenSession
 from cvmodals.predict import process_image
@@ -31,7 +32,6 @@ def init_db():
     Base.metadata.create_all(bind=engine)
 
 # 获取模型路径
-MODEL_PATH = os.path.join(os.path.dirname(__file__), 'cvmodals', 'resnet34.onnx')
 
 @app.post("/video/analyze")
 async def analyze_video_frame(frame_data: bytes = Body(...)):
@@ -41,7 +41,8 @@ async def analyze_video_frame(frame_data: bytes = Body(...)):
     """
     try:
         # 使用模型处理图像
-        analysis_result = process_image(MODEL_PATH, frame_data)
+        # analysis_result = process_image( frame_data)
+        analysis_result = predict_eye(frame_data)
         return analysis_result
     except Exception as e:
         print(f"分析失败: {str(e)}")

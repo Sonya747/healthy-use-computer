@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from PIL import Image
 import io
@@ -61,8 +62,6 @@ def preprocess_image(image_data: bytes) -> np.ndarray:
 # 预测姿态
 def predict_pose(session: ort.InferenceSession, image_array: np.ndarray) -> dict:
     """
-    使用ONNX模型预测姿态
-    
     Args:
         session: ONNX推理会话
         image_array: 预处理后的图像数组
@@ -116,7 +115,7 @@ def predict_pose(session: ort.InferenceSession, image_array: np.ndarray) -> dict
     }
 
 # 组合函数
-def process_image(model_path: str, image_data: bytes) -> dict:
+def process_image(image_data: bytes) -> dict:
     """
     完整的图像处理流程
     
@@ -127,18 +126,20 @@ def process_image(model_path: str, image_data: bytes) -> dict:
     Returns:
         包含预测结果的字典
     """
+    position_Path = os.path.join(os.path.dirname(__file__),  'resnet34.onnx')
     # 加载模型
     print("loading ONNX model")
-    session = load_model(model_path)
+    positionSession = load_model(position_Path)
     
     # 预处理图像
     image_array = preprocess_image(image_data)
     
     # 预测姿态
-    predictions = predict_pose(session, image_array)
+    posePredictions = predict_pose(positionSession, image_array)
+
     # yaw_bin = predictions['head_yaw'] - torch.max(predictions['head_yaw'], dim=1, keepdim=True).values
     # pitch_bin = predictions['head_pitch'] - torch.max(predictions['head_pitch'], dim=1, keepdim=True).values
     # roll_bin = predictions['head_roll'] - torch.max(predictions['head_roll'], dim=1, keepdim=True).values
     # print(predictions)
     
-    return predictions
+    return posePredictions

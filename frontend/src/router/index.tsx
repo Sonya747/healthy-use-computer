@@ -1,19 +1,16 @@
 import { ReactNode } from "react";
-import { Navigate, NavLink, NonIndexRouteObject } from "react-router";
+import { Navigate, NonIndexRouteObject } from "react-router";
 import MainLayout from "../Layout/MainLayout";
 import Camera from "../pages/Camera/Camera";
 import {
   HomeOutlined,
-  LaptopOutlined,
   LineChartOutlined,
   SettingOutlined,
   VideoCameraOutlined,
 } from "@ant-design/icons";
 import Home from "../pages/Home/Home";
 import Report from "../pages/Report/Report";
-import Screen from "../pages/Screen/Screen";
 import Setting from "../pages/Setting/Setting";
-import { MenuProps } from "antd";
 //用于Router以及Menu
 export interface RouteProp extends NonIndexRouteObject {
   label?: string;
@@ -44,18 +41,16 @@ export const routes: RouteProp[] = [
         label: "健康报告",
         icon: <LineChartOutlined />,
       },
-      // {
-      //   path: "screen",
-      //   element: <Screen />,
-      //   label: "屏幕设置",
-      //   icon: <LaptopOutlined />,
-      // },
       {
         path: "setting",
         element: <Setting />,
         label: "设置",
         icon: <SettingOutlined />,
       },
+      {
+        path: "/",
+        element: <Navigate to={"home"} />
+      }
     ],
   },
 ];
