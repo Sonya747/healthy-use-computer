@@ -1,29 +1,22 @@
-import { EyeState } from "./types";
+import { apiClient } from ".";
+import { AxiosResponse } from "axios";
+import { analyzeResult } from "./types";
 
-export interface WebSocketHandlers {
-  onOpen?: () => void;
-  onMessage?: (data: EyeState) => void;
-  onError?: (error: Event) => void;
-}
+export const postPicture = (
+  blob: Blob
+): Promise<AxiosResponse<analyzeResult>> =>
+  apiClient.post<analyzeResult>("/video/analyze", blob, {
+    headers: {
+      "Content-Type": "application/octet-stream",
+    },
+  });
 
-// WebSocket connection for eye analysis
-export const createEyeAnalysisWebSocket = (handlers: WebSocketHandlers) => {
-  const ws = new WebSocket(`ws://localhost:8000/ws/video`);
-  
-  ws.onopen = () => {
-    console.log('WebSocket已连接');
-    handlers.onOpen?.();
-  };
-  
-  ws.onmessage = (event) => {
-    const data = JSON.parse(event.data) as EyeState;
-    handlers.onMessage?.(data);
-  };
-
-  ws.onerror = (error) => {
-    console.error('WebSocket错误:', error);
-    handlers.onError?.(error);
-  };
-  
-  return ws;
+//提醒
+export const postAlert = async (
+  alertType: "eye" | "posture"
+): Promise<number> => {
+  const response = await apiClient.post<number>("/alert", {
+    alert_type: alertType  // 直接传对象，axios 会自动序列化为 JSON
+  });
+  return response.data;
 };

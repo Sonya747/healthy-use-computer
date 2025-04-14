@@ -33,7 +33,12 @@ app.add_middleware(
 def init_db():
     Base.metadata.create_all(bind=engine)
 
-# 获取模型路径
+
+@app.get("/data")
+def get_data():
+    return {"message": "Hello, World!"}
+
+
 
 @app.post("/video/analyze")
 async def analyze_video_frame(frame_data: bytes = Body(...)):
@@ -70,9 +75,6 @@ def end_session():
         db.commit()
     return {"status": "ok"}
 
-@app.get("/data")
-def get_data():
-    return {"message": "Hello, World!"}
 
 @app.get("/report/daily")
 def daily_report():
@@ -158,3 +160,16 @@ async def read_alert_correlation():
     except Exception as e:
         raise HTTPException(500, detail=f"数据获取失败: {str(e)}")
 
+
+@app.post("/alert")
+async def add_alert_event(
+    alert_type: str = Body(..., embed=True)  # 从请求体获取参数
+):
+    db = SessionLocal()
+    event = AlertEvent(alert_type=alert_type, trigger_time=datetime.now())
+    db.add(event)
+    db.commit()
+    db.refresh(event)
+    if event.id is None:
+        raise HTTPException(status_code=500, detail="事件添加失败")
+    return event.id

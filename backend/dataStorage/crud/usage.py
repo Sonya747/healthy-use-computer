@@ -8,21 +8,7 @@ import pandas as pd
 
 # ---------- 数据库基础配置 ----------
 from dataStorage.modals import AlertEvent, PostureMetric, ScreenSession
-from database import Base, engine, SessionLocal
 
-Base.metadata.create_all(bind=engine)
-
-app = FastAPI()
-
-# 依赖项：获取数据库会话
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-# ---------- 数据模型定义 ----------
 class ScreenSessionResponse(BaseModel):
     date: date
     hourly_usage: Dict[str, float]

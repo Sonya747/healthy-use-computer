@@ -14,7 +14,7 @@
         "electron": "^15.3.0"
     },
     "dependencies": {
-        "@ant-design/charts": "^2.2.6",
+        "@ant-design/charts": "^1.4.0",
         "dayjs": "^1.11.13",
         "react-router-dom": "^7.1.5",
         "use-sound": "^5.0.0"

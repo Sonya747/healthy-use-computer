@@ -20,10 +20,20 @@ export interface AlertEvent {
 
 // Types
 export interface EyeState {
-  isEyeOpen: boolean;
-  confidence: number;
+  x1:number;
+  y1:number;
+  x2:number;
+  y2:number;
+  score:number;
+  label:'eye';
+  label_text:string;
 }
+export interface analyzeResult{
+  detections?: EyeState[];
+  position?: PositionState;
+  timeStamp?: number;
 
+}
 export interface DailyReport {
   date: string;
   total_usage_seconds: number;

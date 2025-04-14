@@ -59,37 +59,20 @@ graph LR
     C -->|结果回传| A
 ```
 
-图像编码处理可能的解决
-```python
-def process_base64_image(base64_str: str) -> np.ndarray:
-    """处理前端发送的Base64图像数据"""
-    try:
-        # 分离数据头
-        if "," not in base64_str:
-            raise ValueError("Invalid base64 format")
-        header, data = base64_str.split(",", 1)
-        
-        # Base64解码
-        img_bytes = base64.b64decode(data)
-        nparr = np.frombuffer(img_bytes, dtype=np.uint8)
-        
-        # OpenCV解码
-        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        if img is None:
-            raise ValueError("Failed to decode image")
-            
-        # 格式转换
-        rgb_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        
-        # 尺寸调整
-        if rgb_img.shape != (450, 450, 3):
-            rgb_img = cv2.resize(rgb_img, (450, 450))
-            
-        return rgb_img
-        
-    except Exception as e:
-        print(f"图像处理失败: {str(e)}")
-        raise
+报告界面用户交互：
+
+```mermaid
+graph TD
+  A[初始化加载] --> B{数据状态}
+  B -->|加载中| C[显示Spin加载器]
+  B -->|成功| D{检查数据量}
+  D -->|数据足够| E[正常显示图表]
+  D -->|数据不足| F[显示图表+警告提示]
+  B -->|空数据| G[显示Empty组件]
+  B -->|请求失败| H[显示Result错误页]
+  C --> I[自动重试]
+  G --> I
+  H --> I
 ```
 # React + TypeScript + Vite
 

@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { VideoCameraOutlined } from "@ant-design/icons";
-import './index.css';
+import "./index.css";
 import { message } from "antd";
 import useSound from "use-sound";
-import sound from '@/assets/audio/notification.wav';
-import { EyeState } from '../../api/types';
-import { endSession, startSession } from '../../api/usage';
-import axios from 'axios';
+import sound from "@/assets/audio/notification.wav";
+import { EyeState } from "../../api/types";
+import { endSession, startSession } from "../../api/usage";
+import { postAlert, postPicture } from "../../api/video";
+import dayjs from "dayjs";
 
 const Camera = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -14,6 +15,8 @@ const Camera = () => {
   const [isCameraOn, setIsCameraOn] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const [playSound] = useSound(sound, { volume: 0.5 });
+
+  const [eyeWidth, eyeHeight] = [10, 10]; // TODO :临时的坐标差值骇值
 
   useEffect(() => {
     if (!isCameraOn) {
@@ -41,24 +44,42 @@ const Camera = () => {
 
     try {
       const blob = await new Promise<Blob>((resolve) => {
-        canvas.toBlob((blob) => {
-          if (blob) resolve(blob);
-        }, 'image/jpeg', 0.7);
+        canvas.toBlob(
+          (blob) => {
+            if (blob) resolve(blob);
+          },
+          "image/jpeg",
+          0.7
+        );
       });
 
-      const response = await axios.post('http://localhost:8000/video/analyze', blob, {
-        headers: {
-          'Content-Type': 'application/octet-stream'
+      const response = await postPicture(blob);
+
+      const data = response.data;
+      console.log("分析结果:", data);
+      if (data.detections.length && data.detections[0]) {
+        const eye: EyeState = data.detections[0];
+        if (
+          // Math.abs(eye.x1 - eye.x2) < eyeWidth ||
+          // Math.abs(eye.y1 - eye.y2) < eyeHeight
+          true
+        ) {
+          console.log("检测到的眼睛:", data.detections[0]);
+          try {
+            const response = await postAlert("eye");
+            console.log("Alert posted successfully:", response.data);
+            playSound();
+          } catch (error) {
+            console.error("Error posting alert:", error);
+          }
         }
-      });
 
-      const data = response.data as EyeState;
-      console.log('分析结果:', data);
-      if (!data.isEyeOpen) {
-        playSound();
+        if(data.position) {
+          console.log("检测到的姿态:", data.position);
+        }
       }
     } catch (error) {
-      console.error('分析失败:', error);
+      console.error("分析失败:", error);
     }
   };
 
@@ -90,7 +111,6 @@ const Camera = () => {
       message.success("检测模式开启");
       // 设置定时器，每1s发送一帧
       intervalRef.current = setInterval(analyzeFrame, 1000);
-      
     } catch (err) {
       console.error("video stream error", err);
     }
@@ -98,66 +118,79 @@ const Camera = () => {
 
   const handleVideoConnect = () => {
     if (videoRef.current) {
-      videoRef.current.play().catch(error => {
-        console.error('视频自动播放失败:', error);
+      videoRef.current.play().catch((error) => {
+        console.error("视频自动播放失败:", error);
       });
     }
   };
 
   return (
-    <div className="camera-container" style={{ padding: 24, background: '#f0f2f5' }}>
+    <div
+      className="camera-container"
+      style={{ padding: 24, background: "#f0f2f5" }}
+    >
       <div
         className="video-container"
         style={{
-          position: 'relative',
+          position: "relative",
           maxWidth: 800,
-          margin: '0 auto',
+          margin: "0 auto",
           borderRadius: 16,
-          overflow: 'hidden',
-          boxShadow: '0 8px 20px rgba(0, 0, 0, 0.1)',
-          background: '#1a1a1a',
-          aspectRatio: '16/9'
+          overflow: "hidden",
+          boxShadow: "0 8px 20px rgba(0, 0, 0, 0.1)",
+          background: "#1a1a1a",
+          aspectRatio: "16/9",
         }}
       >
         <video
           ref={videoRef}
           autoPlay
-          className={`video-element ${isCameraOn ? 'connected' : 'disconnected'}`}
+          className={`video-element ${
+            isCameraOn ? "connected" : "disconnected"
+          }`}
           style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            transition: 'transform 0.3s ease',
-            cursor: 'pointer',
-            transform: isCameraOn ? 'scale(1)' : 'scale(0.95)'
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            transition: "transform 0.3s ease",
+            cursor: "pointer",
+            transform: isCameraOn ? "scale(1)" : "scale(0.95)",
           }}
           onCanPlay={handleVideoConnect}
           onClick={isCameraOn ? stopCamera : startCamera}
         />
 
         {/* 状态指示层 */}
-        <div style={{
-          position: 'absolute',
-          top: 16,
-          right: 16,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8
-        }}>
-          <div style={{
-            width: 12,
-            height: 12,
-            borderRadius: '50%',
-            background: isCameraOn ? '#52c41a' : '#ff4d4f',
-            boxShadow: `0 0 8px ${isCameraOn ? 'rgba(82, 196, 26, 0.4)' : 'rgba(255, 77, 79, 0.4)'}`,
-            animation: 'breathing 1.5s infinite'
-          }} />
-          <span style={{
-            color: 'white',
-            textShadow: '0 2px 4px rgba(0,0,0,0.5)',
-            fontSize: 14
-          }}>
-            {isCameraOn ? '监测中' : '已暂停'}
+        <div
+          style={{
+            position: "absolute",
+            top: 16,
+            right: 16,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          <div
+            style={{
+              width: 12,
+              height: 12,
+              borderRadius: "50%",
+              background: isCameraOn ? "#52c41a" : "#ff4d4f",
+              boxShadow: `0 0 8px ${
+                isCameraOn ? "rgba(82, 196, 26, 0.4)" : "rgba(255, 77, 79, 0.4)"
+              }`,
+              animation: "breathing 1.5s infinite",
+            }}
+          />
+          <span
+            style={{
+              color: "white",
+              textShadow: "0 2px 4px rgba(0,0,0,0.5)",
+              fontSize: 14,
+            }}
+          >
+            {isCameraOn ? "监测中" : "已暂停"}
           </span>
         </div>
 
@@ -165,45 +198,45 @@ const Camera = () => {
         <div
           className="control"
           style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            cursor: 'pointer',
-            transition: 'all 0.3s',
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            cursor: "pointer",
+            transition: "all 0.3s",
             opacity: 0.8,
             // ':hover': {
             //   opacity: 1,
             //   transform: 'translate(-50%, -50%) scale(1.1)'
             // }
           }}
-        // onClick={isCameraOn ? stopCamera : startCamera}
-        >
-
-        </div>
+          // onClick={isCameraOn ? stopCamera : startCamera}
+        ></div>
 
         {/* 未连接时的占位符 */}
         {!isCameraOn && (
-          <div style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'radial-gradient(circle, #434343 0%, #262626 100%)',
-            cursor: "pointer"
-          }}
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "radial-gradient(circle, #434343 0%, #262626 100%)",
+              cursor: "pointer",
+            }}
             onClick={isCameraOn ? stopCamera : startCamera}
-
           >
-            <VideoCameraOutlined style={{
-              fontSize: 64,
-              color: 'rgba(255, 255, 255, 0.2)',
-              animation: 'pulse 2s infinite'
-            }} />
+            <VideoCameraOutlined
+              style={{
+                fontSize: 64,
+                color: "rgba(255, 255, 255, 0.2)",
+                animation: "pulse 2s infinite",
+              }}
+            />
           </div>
         )}
       </div>

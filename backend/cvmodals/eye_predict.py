@@ -158,7 +158,7 @@ def pos_process(outputs,
         }
         detections.append(detection)
     
-    return {"detections": detections}
+    return detections
 
 # 计算原始图像尺寸
 def get_image_size_with_opencv(image_bytes):
