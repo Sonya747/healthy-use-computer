@@ -1,2 +1,4 @@
 node_modules
 node_modules
+backend/cvmodals/eye.onnx
+backend/cvmodals/resnet34.onnx
