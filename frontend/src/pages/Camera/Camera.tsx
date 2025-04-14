@@ -67,7 +67,6 @@ const Camera = () => {
           console.log("检测到的眼睛:", data.detections[0]);
           try {
             const response = await postAlert("eye");
-            console.log("Alert posted successfully:", response.data);
             playSound();
           } catch (error) {
             console.error("Error posting alert:", error);
