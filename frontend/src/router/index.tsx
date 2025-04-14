@@ -11,6 +11,7 @@ import {
 import Home from "../pages/Home/Home";
 import Report from "../pages/Report/Report";
 import Setting from "../pages/Setting/Setting";
+import Dashboard from "../pages/Report/Dashboard";
 //用于Router以及Menu
 export interface RouteProp extends NonIndexRouteObject {
   label?: string;
@@ -37,7 +38,8 @@ export const routes: RouteProp[] = [
       },
       {
         path: "report",
-        element: <Report />,
+        // element: <Report />,
+        element:<Dashboard />,
         label: "健康报告",
         icon: <LineChartOutlined />,
       },
