@@ -71,8 +71,8 @@ const Camera = () => {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
-      message.info("监测模式结束");
       const res = await endSession();
+      message.info("监测模式结束");
       console.log("endSession", res);
     }
   };

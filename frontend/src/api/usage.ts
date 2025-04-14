@@ -1,4 +1,3 @@
-import { Moment } from 'moment';
 import { apiClient } from '.';
 import { formatISO, subDays } from 'date-fns'; // Ensure you have date-fns installed
 import { AlertCorrelation, PostureMetric, ScreenSessionData } from '../pages/Report/types';
@@ -54,7 +53,7 @@ export const fetchScreenSessions = async (
 
 export const fetchPostureMetrics = async (
   threshold = 25,
-  timeBucket = '5min'
+  timeBucket = '10min'
 ): Promise<PostureMetric[]> => {
   const response = await apiClient.get('/posture-metrics', {
     params: { threshold, time_bucket: timeBucket }
