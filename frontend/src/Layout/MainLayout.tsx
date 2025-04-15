@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Button, Layout, Menu, MenuProps, theme } from "antd";
+import { useState } from "react";
+import { Layout, Menu, MenuProps, theme } from "antd";
 import { RouteProp, routes } from "../router";
 import { Outlet, useNavigate } from "react-router";
 
@@ -10,7 +10,7 @@ const MainLayout = () => {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
-  let navigate = useNavigate()
+  const navigate = useNavigate()
 
 
   type MenuItem = Required<MenuProps>["items"][number];

@@ -129,11 +129,11 @@ async def read_screen_sessions(
 @app.get("/posture-metrics", response_model=List[PostureMetricResponse])
 async def read_posture_metrics(
     threshold: Optional[int] = 25,
-    time_bucket: Optional[str] = "5min",
+    time_bucket: Optional[str] = "10min",
 ):
     db = SessionLocal()
     try:
-        valid_buckets = ["5min", "15min", "1h"]
+        valid_buckets = ["10min", "15min", "1h"]
         if time_bucket not in valid_buckets:
             raise ValueError("无效的时间分桶参数")
         
