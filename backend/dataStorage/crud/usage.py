@@ -94,6 +94,7 @@ class DataAccess:
                     "roll": round(float(r.roll), 2) if r.roll is not None else None
                 })
             except Exception as e:
+                # raise HTTPException(e)
                 continue
 
         return formatted_results
