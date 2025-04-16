@@ -4,10 +4,9 @@ import "./index.css";
 import { message } from "antd";
 import useSound from "use-sound";
 import sound from "@/assets/audio/notification.wav";
-import { EyeState } from "../../api/types";
+// import { EyeState } from "../../api/types";
 import { endSession, startSession } from "../../api/usage";
-import { postAlert, postPicture } from "../../api/video";
-import dayjs from "dayjs";
+import {  postPicture } from "../../api/video";
 
 const Camera = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -16,7 +15,7 @@ const Camera = () => {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const [playSound] = useSound(sound, { volume: 0.5 });
 
-  const [eyeWidth, eyeHeight] = [10, 10]; // TODO :临时的坐标差值骇值
+  // const [eyeWidth, eyeHeight] = [10, 10]; // TODO :临时的坐标差值骇值
 
   useEffect(() => {
     if (!isCameraOn) {
