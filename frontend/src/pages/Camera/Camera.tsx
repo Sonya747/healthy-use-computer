@@ -56,26 +56,13 @@ const Camera = () => {
       const response = await postPicture(blob);
 
       const data = response.data;
-      console.log("分析结果:", data);
-      if (data.detections.length && data.detections[0]) {
-        const eye: EyeState = data.detections[0];
-        if (
-          // Math.abs(eye.x1 - eye.x2) < eyeWidth ||
-          // Math.abs(eye.y1 - eye.y2) < eyeHeight
-          true
-        ) {
-          console.log("检测到的眼睛:", data.detections[0]);
-          try {
-            const response = await postAlert("eye");
-            playSound();
-          } catch (error) {
-            console.error("Error posting alert:", error);
-          }
-        }
-
-        if(data.position) {
-          console.log("检测到的姿态:", data.position);
-        }
+      console.log("分析结果:", data,data.position);
+      if(data.detections?.length) {
+        //TODO 眼睛处理
+      }
+      if(Math.abs(data.position.pitch)>7){
+        playSound(); //TODO 读取设置
+        message.info("头部倾斜")
       }
     } catch (error) {
       console.error("分析失败:", error);

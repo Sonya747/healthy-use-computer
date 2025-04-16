@@ -48,9 +48,17 @@ async def analyze_video_frame(frame_data: bytes = Body(...)):
     """
     try:
         # 使用模型处理图像
-        # analysis_result = process_image( frame_data)
-        analysis_result = predict_eye(frame_data)
-        return analysis_result
+        analysis_result = process_image( frame_data)
+    #     return {
+    #     'yaw': float(pred_ypr[0]),
+    #     'pitch': float(pred_ypr[1]),
+    #     'roll': float(pred_ypr[2])
+    # }
+        # analysis_result = predict_eye(frame_data) #TODO 
+        return {
+            'detections':[],
+            'position':analysis_result
+        }
     except Exception as e:
         print(f"分析失败: {str(e)}")
         return {"error": str(e)}
@@ -148,7 +156,6 @@ async def read_screen_sessions(
     db = SessionLocal()
     try:
         raw_data = DataAccess.get_screen_sessions(db, start_date, end_date)
-        print(raw_data)
         processed = {}
         for item in raw_data:
             date_str = item["date"]

@@ -21,7 +21,7 @@ import type {
   DateRange,
 } from "./types";
 import { Typography } from "antd";
-import { AlertOutlined, DashboardOutlined, ExclamationCircleFilled, LaptopOutlined, UserOutlined } from "@ant-design/icons";
+import { AlertOutlined, DashboardOutlined, LaptopOutlined, UserOutlined } from "@ant-design/icons";
 import { Grid } from "antd";
 import { debounce } from "lodash";
 import { DailyPostureMetric, fetchAlertData, fetchPostureData, fetchScreenData } from "./mockdata";

@@ -7,8 +7,9 @@ export interface VideoFrame {
 
 
 export interface PositionState {
-  position: string; // 姿态类型
-  confidence: number; // 置信度
+    'yaw': number,
+    'pitch': number,
+    'roll': number
 }
 
 // 提醒事件
@@ -31,8 +32,6 @@ export interface EyeState {
 export interface analyzeResult{
   detections?: EyeState[];
   position?: PositionState;
-  timeStamp?: number;
-
 }
 export interface DailyReport {
   date: string;

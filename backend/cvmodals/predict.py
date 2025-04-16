@@ -109,9 +109,9 @@ def predict_pose(session: ort.InferenceSession, image_array: np.ndarray) -> dict
     
     # 返回结果
     return {
-        'head_yaw': float(pred_ypr[0]),
-        'head_pitch': float(pred_ypr[1]),
-        'head_roll': float(pred_ypr[2])
+        'yaw': float(pred_ypr[0]),
+        'pitch': float(pred_ypr[1]),
+        'roll': float(pred_ypr[2])
     }
 
 # 组合函数
@@ -136,6 +136,11 @@ def process_image(image_data: bytes) -> dict:
     
     # 预测姿态
     posePredictions = predict_pose(positionSession, image_array)
+    # return {
+    #     'yaw': float(pred_ypr[0]),
+    #     'pitch': float(pred_ypr[1]),
+    #     'roll': float(pred_ypr[2])
+    # }
 
     # yaw_bin = predictions['head_yaw'] - torch.max(predictions['head_yaw'], dim=1, keepdim=True).values
     # pitch_bin = predictions['head_pitch'] - torch.max(predictions['head_pitch'], dim=1, keepdim=True).values
