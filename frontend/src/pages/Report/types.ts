@@ -8,9 +8,10 @@ export interface ScreenSessionData {
   
   export interface PostureMetric {
     timestamp: string;
-    head_pitch: number;
-    head_yaw: number;
-    is_abnormal: boolean;
+    pitch: number;
+    yaw: number;
+    roll:number
+
   }
   
   export interface AlertCorrelation {

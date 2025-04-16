@@ -1,0 +1,17 @@
+{
+    "sqltools.useNodeRuntime": true,
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "name": "usage",
+            "database": "usage.db"
+        },
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "name": "backend",
+            "database": "backend/usage.db"
+        }
+    ]
+}

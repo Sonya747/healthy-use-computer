@@ -5,10 +5,10 @@ from fastapi import FastAPI, Body, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
-from dataStorage.crud.usage import AlertCorrelationResponse, DataAccess, PostureMetricResponse, ScreenSessionResponse
+from dataStorage.crud.usage import AlertCorrelationResponse, DataAccess, DataUpdate, PostureMetricResponse, ScreenSessionResponse
 from cvmodals.eye_predict import predict_eye
 from database import Base
-from dataStorage.modals import AlertEvent, ScreenSession
+from dataStorage.modals import AlertEvent, ScreenSession, UserSetting
 from cvmodals.predict import process_image
 import os
 
@@ -59,11 +59,44 @@ async def analyze_video_frame(frame_data: bytes = Body(...)):
 @app.post("/session/start")
 def start_session():
     db = SessionLocal()
-    session = ScreenSession(start_time=datetime.now())
-    db.add(session)
-    db.commit()
-    return {"session_id": session.id}
+    try:
+        # 创建新会话
+        new_session = ScreenSession(start_time=datetime.now())
+        db.add(new_session)
 
+        setting = db.query(UserSetting).first()
+        if not setting:
+            # 创建默认设置
+            default_setting = UserSetting(
+                alter_method=1,  # 对应'music'
+                yall= 20,
+                roll=20,
+                pitch = 20,
+                eyeWidth = 10
+            )
+            db.add(default_setting)
+        
+        db.commit()  # 统一提交
+        
+        # 重新获取设置数据（如果新建了默认设置）
+        current_setting = setting or default_setting
+
+        return {
+            "session_id": new_session.id,
+            "settings": {
+                "alter_method": "music" if current_setting.alter_method == 1 else "silence",
+                "yall": current_setting.yall,
+                "roll": current_setting.roll,
+                "pitch":current_setting.pitch,
+                "eyeWidth":current_setting.eyeWidth
+            }
+        }
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    finally:
+        db.close()
 # 结束使用记录
 @app.post("/session/end")
 def end_session():
@@ -128,21 +161,20 @@ async def read_screen_sessions(
 
 @app.get("/posture-metrics", response_model=List[PostureMetricResponse])
 async def read_posture_metrics(
-    threshold: Optional[int] = 25,
-    time_bucket: Optional[str] = "10min",
+    time_bucket: Optional[str] = "H",
 ):
     db = SessionLocal()
     try:
-        valid_buckets = ["10min", "15min", "1h"]
+        valid_buckets = ['H','D','W','M']
         if time_bucket not in valid_buckets:
             raise ValueError("无效的时间分桶参数")
         
-        data = DataAccess.get_posture_metrics(db, threshold, time_bucket)
+        data = DataAccess.get_posture_metrics(db, time_bucket)
         return [{
             "timestamp": item["timestamp"].to_pydatetime(),
-            "head_pitch": round(item["head_pitch"], 1),
-            "head_yaw": round(item["head_yaw"], 1),
-            "is_abnormal": item["is_abnormal"]
+            "pitch": round(item["pitch"], 1),
+            "yaw": round(item["yall"], 1),
+            "roll":round(item["roll"],1)
         } for item in data]
     except Exception as e:
         raise HTTPException(400, detail=str(e))
@@ -173,3 +205,27 @@ async def add_alert_event(
     if event.id is None:
         raise HTTPException(status_code=500, detail="事件添加失败")
     return event.id
+
+@app.post("/user-setting")
+async def post_user_settings(data:dict):
+    db = SessionLocal()
+    try:
+        new_setting = DataUpdate.updateSettings(db=db,data=data)
+        return new_setting
+    except HTTPException as e:
+        raise e;
+
+@app.get("/user-setting")
+async def get_user_settings():
+    db = SessionLocal()
+    try:
+        settings = db.query(UserSetting).first()
+        if(settings):
+            return settings
+
+        else:
+            return{}
+            
+    except Exception as e:
+        raise e
+    

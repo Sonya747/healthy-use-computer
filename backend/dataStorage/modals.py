@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, JSON, Boolean, Enum
+from sqlalchemy import Column, Float, Integer, String, DateTime, JSON, Boolean, Enum
 from database import Base
 
 # 屏幕使用时间
@@ -14,8 +14,10 @@ class PostureMetric(Base):
     __tablename__ = 'posture_metrics'
     id = Column(Integer, primary_key=True)
     timestamp = Column(DateTime, nullable=False)    # 记录时间
-    head_pitch = Column(Integer)                    # 简化为整数值
-    head_yaw = Column(Integer)
+    pitch = Column(Float)                  
+    yaw = Column(Float)
+    roll = Column(Float)
+
 
 # 提醒事件
 class AlertEvent(Base):
@@ -23,3 +25,12 @@ class AlertEvent(Base):
     id = Column(Integer, primary_key=True)
     alert_type = Column(Enum('posture', 'eye'))    # 提醒类型
     trigger_time = Column(DateTime, nullable=False)
+
+class UserSetting(Base):
+    __tablename__ = 'user_settings'
+    id = Column(Integer, primary_key=True)
+    alter_method = Column(Integer, nullable=False) #1： music ， 0:silence
+    yall = Column(Float, nullable=False)         
+    roll = Column(Float, nullable=False)
+    pitch = Column(Float, nullable=False)
+    eyeWidth = Column(Float, nullable=False)

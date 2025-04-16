@@ -9,7 +9,6 @@ import {
   VideoCameraOutlined,
 } from "@ant-design/icons";
 import Home from "../pages/Home/Home";
-import Report from "../pages/Report/Report";
 import Setting from "../pages/Setting/Setting";
 import Dashboard from "../pages/Report/Dashboard";
 //用于Router以及Menu

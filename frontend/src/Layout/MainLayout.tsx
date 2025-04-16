@@ -24,7 +24,7 @@ const MainLayout = () => {
     };
   }
 
-  const menuitems = routes[0].children.map((route) => getMenuItem(route));
+  const menuitems = routes[0].children.filter(route => route.path!=='/').map((route) => getMenuItem(route));
 
   return (
     <div

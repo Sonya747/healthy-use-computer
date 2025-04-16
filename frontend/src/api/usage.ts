@@ -52,11 +52,10 @@ export const fetchScreenSessions = async (
 };
 
 export const fetchPostureMetrics = async (
-  threshold = 25,
-  timeBucket = '10min'
+  timeBucket = 'D'
 ): Promise<PostureMetric[]> => {
   const response = await apiClient.get('/posture-metrics', {
-    params: { threshold, time_bucket: timeBucket }
+    params: { time_bucket: timeBucket }
   });
   return response.data;
 };

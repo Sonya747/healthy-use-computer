@@ -122,12 +122,12 @@ const Dashboard: React.FC = () => {
   const postureChartData = [
     ...postureData.map((d) => ({
       timestamp: d.timestamp,
-      value: d.head_pitch,
+      value: d.pitch,
       type: "头部俯仰角",
     })),
     ...postureData.map((d) => ({
       timestamp: d.timestamp,
-      value: d.head_yaw,
+      value: d.yaw,
       type: "头部偏航角",
     })),
   ];

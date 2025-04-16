@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import  HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import Float, func, case, extract
 from datetime import date, datetime
@@ -7,7 +7,7 @@ from pydantic import BaseModel
 import pandas as pd
 
 # ---------- 数据库基础配置 ----------
-from dataStorage.modals import AlertEvent, PostureMetric, ScreenSession
+from dataStorage.modals import AlertEvent, PostureMetric, ScreenSession, UserSetting
 
 class ScreenSessionResponse(BaseModel):
     date: date
@@ -15,9 +15,9 @@ class ScreenSessionResponse(BaseModel):
 
 class PostureMetricResponse(BaseModel):
     timestamp: datetime
-    head_pitch: float
-    head_yaw: float
-    is_abnormal: bool
+    pitch: float
+    yaw: float
+    yoll:float
 
 class AlertCorrelationResponse(BaseModel):
     date: date
@@ -50,37 +50,56 @@ class DataAccess:
     @staticmethod
     def get_posture_metrics(
         db: Session,
-        threshold: int = 25,
-        time_bucket: str = "5min"
+        time_bucket: str
     ) -> List[Dict]:
-        """获取姿态指标聚合数据"""
-        # 获取原始数据
-        raw_data = db.query(
-            PostureMetric.timestamp,
-            PostureMetric.head_pitch,
-            PostureMetric.head_yaw,
-            case((PostureMetric.head_pitch > threshold, True), else_=False).label("is_abnormal")
-        ).all()
+        """获取姿态指标聚合数据（修复版）"""
+        time_expr_map = {
+        'H': func.strftime('%Y-%m-%d %H:00:00', PostureMetric.timestamp),
+        'D': func.strftime('%Y-%m-%d 00:00:00', PostureMetric.timestamp),
+        'W': func.strftime('%Y-%W', PostureMetric.timestamp),
+        'M': func.strftime('%Y-%m-01', PostureMetric.timestamp)
+         }
+    
+        try:
+            time_expr = time_expr_map[time_bucket]
+        except KeyError:
+            raise HTTPException(status_code=400, detail="Unsupported time bucket")
 
-        # 使用Pandas进行时间分桶处理
-        df = pd.DataFrame([{
-            "timestamp": r.timestamp,
-            "head_pitch": r.head_pitch,
-            "head_yaw": r.head_yaw,
-            "is_abnormal": r.is_abnormal
-        } for r in raw_data])
+        # 执行聚合查询
+        query = db.query(
+            time_expr.label('time_bucket'),
+            func.avg(PostureMetric.pitch).label('pitch'),
+            func.avg(PostureMetric.yaw).label('yaw'),
+            func.avg(PostureMetric.roll).label('roll')
+        ).group_by('time_bucket')
 
-        if not df.empty:
-            df['timestamp'] = pd.to_datetime(df['timestamp'])
-            df = df.resample(time_bucket, on='timestamp').agg({
-                'head_pitch': 'mean',
-                'head_yaw': 'mean',
-                'is_abnormal': 'mean'
-            }).reset_index()
-            df['is_abnormal'] = df['is_abnormal'].round().astype(bool)
-            return df.to_dict("records")
-        return []
+        try:
+            results = query.all()
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
+        # 结果格式化
+        formatted_results = []
+        for r in results:
+            try:
+                if time_bucket == 'W':
+                    dt = datetime.strptime(r.time_bucket + '-1', "%Y-%W-%w")
+                else:
+                    dt = datetime.strptime(r.time_bucket, time_expr_map[time_bucket].compile().string)
+                
+                formatted_results.append({
+                    "timestamp": dt.isoformat(),
+                    "pitch": round(float(r.pitch), 2) if r.pitch is not None else None,
+                    "yaw": round(float(r.yaw), 2) if r.yaw is not None else None,
+                    "roll": round(float(r.roll), 2) if r.roll is not None else None
+                })
+            except Exception as e:
+                continue
+
+        return formatted_results
+
+
+    
     @staticmethod
     def get_alert_correlation(db: Session) -> List[Dict]:
         """获取提醒与使用时长的关联数据"""
@@ -102,3 +121,45 @@ class DataAccess:
             "alert_count": r.alert_count
         } for r in results]
 
+
+class DataUpdate:
+    @staticmethod
+    def updateSettings(db:Session,data:dict):
+        try:
+        # 检查是否存在现有记录
+            existing_setting = db.query(UserSetting).first()
+            
+            if existing_setting:
+                # 更新现有记录
+                for key, value in data.items():
+                    if hasattr(existing_setting, key):
+                        setattr(existing_setting, key, value)
+                    else:
+                        db.rollback()
+                        raise HTTPException(
+                            status_code=400, 
+                            detail=f"Invalid field: {key}"
+                        )
+                db.commit()
+                db.refresh(existing_setting)
+                return existing_setting
+            else:
+                # 创建新记录
+                valid_fields = {'alter_method', 'yall', 'roll'}
+                if not all(key in valid_fields for key in data.keys()):
+                    db.rollback()
+                    raise HTTPException(
+                        status_code=400, 
+                        detail="Invalid fields in request"
+                    )
+                    
+                new_setting = UserSetting(**data)
+                db.add(new_setting)
+                db.commit()
+                db.refresh(new_setting)
+                return new_setting 
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(status_code=500, detail=str(e))
+        finally:
+            db.close()

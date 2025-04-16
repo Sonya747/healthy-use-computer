@@ -1,51 +1,100 @@
 import { Form, InputNumber, Select, Button, Tooltip } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { useEffect, useState } from 'react';  // 新增状态管理
 import './index.css';
+import { getSetting } from '../../api/setting';
 
 const { Option } = Select;
 
-const Setting = () => {
-    const [form] = Form.useForm();
+// 接口定义
+export interface SettingData {
+    alter_method: number;
+    yall: number;
+    roll: number;
+    reminderMethod: 'music' | 'silence';  // 与后端 Enum 对应
+}
 
+const Setting = () => {
+    const [form] = Form.useForm<SettingData>();
+    const [loading, setLoading] = useState(false);  // 新增加载状态
+
+    // 参数配置与后端字段对齐
     const params = [
         {
-            label: "参数一",
-            value: "param1",
-            description: "这个参数用于调节。。。。。",
-            defaultValue: 10
+            label: "提醒方式",
+            value: "reminderMethod" as const,
+            description: "系统通知方式选择",
+            options: [
+                { label: '音乐提醒', value: 'music' },
+                { label: '静默通知', value: 'silence' }
+            ]
         },
         {
-            label: "参数二",
-            value: "param2",
-            description: "这个参数用于调节。。。。。",
-            defaultValue: 20
+            label: "横向调节",
+            value: "yall" as const,
+            description: "水平方向灵敏度（0.0-1.0）",
+            min: 0,
+            max: 1,
+            step: 0.1
         },
         {
-            label: "参数三",
-            value: "param3",
-            description: "这个参数用于调节。。。。。",
-            defaultValue: 30
-        },
-        {
-            label: "参数四",
-            value: "param4",
-            description: "这个参数用于调节。。。。。",
-            defaultValue: 40
+            label: "纵向调节",
+            value: "roll" as const,
+            description: "垂直方向灵敏度（0.0-1.0）",
+            min: 0,
+            max: 1,
+            step: 0.1
         }
     ];
 
-    const initialValues = params.reduce((acc, param) => {
-        acc[param.value] = param.defaultValue;
-        return acc;
-    }, { reminderMethod: '静默通知' });
+    // 初始化数据获取
+    useEffect(() => {
+        const fetchSettings = async () => {
+            setLoading(true);
+            try {
+                const data = await getSetting();
+                // if (!response.ok) throw new Error('No settings');
+                form.setFieldsValue({
+                    ...data,
+                    reminderMethod: data.alter_method === 1 ? 'music' : 'silence'  // 转换后端数据
+                });
+            } catch (error) {
+                console.log('使用默认设置', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchSettings();
+    }, [form]);
 
-    const onFinish = (values: any) => {
-        console.log('Received values from form: ', values);
-        // Handle form submission, e.g., send values to backend
-    };
+    // 表单提交
+    const onFinish = async (values: SettingData) => {
+        setLoading(true);
+        try {
+            const payload = {
+                alter_method: values.reminderMethod === 'music' ? 1 : 0,  // 转换枚举值
+                yall: Number(values.yall.toFixed(1)),
+                roll: Number(values.roll.toFixed(1))
+            };
 
-    const onReset = () => {
-        form.resetFields();
+            const response = await fetch('/api/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) throw new Error('保存失败');
+
+            const result = await response.json();
+            form.setFieldsValue({
+                ...result,
+                reminderMethod: result.alter_method === 1 ? 'music' : 'silence'
+            });
+        } catch (error) {
+            console.error('保存错误:', error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -53,61 +102,76 @@ const Setting = () => {
             <Form
                 form={form}
                 onFinish={onFinish}
-                initialValues={initialValues}
-            // layout="vertical"
+                layout="vertical"
+                disabled={loading}
             >
-                <Form.Item
-                    key="param"
-                    label="参数设置:"
-                    rules={[{ required: true, message: "请设置参数" }]}
-                    name={"params"}
-                >
-                    {params.map(param => (
+                {params.map(param => (
+                    param.value === 'reminderMethod' ? (
                         <Form.Item
                             key={param.value}
                             label={
                                 <span>
                                     {param.label}
-                                    <Tooltip title={param.description}
-                                    >
-                                        <ExclamationCircleOutlined
-                                            style={{ marginLeft: 4 }}
-                                        />
+                                    <Tooltip title={param.description}>
+                                        <ExclamationCircleOutlined style={{ marginLeft: 4 }} />
                                     </Tooltip>
                                 </span>
                             }
                             name={param.value}
-                            rules={[{ required: true, message: `请输入${param.label}!` }]}
+                            rules={[{ required: true }]}
                         >
-                            <InputNumber min={0} max={100} style={{ width: '100%' }} />
+                            <Select>
+                                {param.options?.map(opt => (
+                                    <Option key={opt.value} value={opt.value}>
+                                        {opt.label}
+                                    </Option>
+                                ))}
+                            </Select>
                         </Form.Item>
-                    ))}
-                </Form.Item>
-
-                <Form.Item
-                    label={
-                        <span>
-                            提醒方式
-                            <Tooltip title="选择提醒方式，例如邮件或短信">
-                                <i className="fas fa-info-circle" />
-                            </Tooltip>
-                        </span>
-                    }
-                    name="reminderMethod"
-                    rules={[{ required: true, message: '请选择提醒方式!' }]}
-                >
-                    <Select>
-                        <Option value="audio">音频</Option>
-                        <Option value="sms">通知</Option>
-                    </Select>
-                </Form.Item>
+                    ) : (
+                        <Form.Item
+                            key={param.value}
+                            label={
+                                <span>
+                                    {param.label}
+                                    <Tooltip title={param.description}>
+                                        <ExclamationCircleOutlined style={{ marginLeft: 4 }} />
+                                    </Tooltip>
+                                </span>
+                            }
+                            name={param.value}
+                            rules={[
+                                { required: true },
+                                { type: 'number', min: param.min, max: param.max }
+                            ]}
+                        >
+                            <InputNumber
+                                min={param.min}
+                                max={param.max}
+                                step={param.step}
+                                style={{ width: '100%' }}
+                                precision={1}
+                                formatter={value => `${value ?? 0}%`}
+                            // parser={value => value?.replace('%', '') ?? 0}
+                            />
+                        </Form.Item>
+                    )
+                ))}
 
                 <Form.Item>
-                    <Button type="primary" htmlType="submit">
-                        保存设置
+                    <Button
+                        type="primary"
+                        htmlType="submit"
+                        loading={loading}
+                    >
+                        {loading ? '保存中...' : '保存设置'}
                     </Button>
-                    <Button style={{ marginLeft: '8px' }} onClick={onReset}>
-                        重置设置
+                    <Button
+                        style={{ marginLeft: '8px' }}
+                        onClick={() => form.resetFields()}
+                        disabled={loading}
+                    >
+                        重置
                     </Button>
                 </Form.Item>
             </Form>
