@@ -5,35 +5,6 @@ import { RiseOutlined, AlertOutlined, DashboardOutlined, ClockCircleOutlined } f
 const { Title, Text } = Typography;
 
 const Home = () => {
-  // 示例数据
-  const usageData = [
-    { day: '周一', value: 4.5 },
-    { day: '周二', value: 6.2 },
-    { day: '周三', value: 5.8 },
-    { day: '周四', value: 7.1 },
-    { day: '周五', value: 6.5 },
-    { day: '周六', value: 8.3 },
-    { day: '周日', value: 4.9 },
-  ];
-
-  const config = {
-    data: usageData,
-    xField: 'day',
-    yField: 'value',
-    label: {},
-    point: {
-      size: 5,
-      shape: 'diamond',
-    },
-    animation: {
-      appear: {
-        animation: 'path-in',
-        duration: 2000,
-      },
-    },
-    color: '#1890ff',
-  };
-
   return (
     <div style={{ padding: '24px', background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)' }}>
       <Row gutter={[24, 24]}>
@@ -41,7 +12,7 @@ const Home = () => {
           <Card bordered={false} style={{ borderRadius: 15, background: 'rgba(255,255,255,0.9)' }}>
             <Space direction="vertical" size="middle" style={{ width: '100%' }}>
               <Title level={2} style={{ color: '#1890ff' }}>
-                🖥️ 欢迎使用 Healthy Use Computer
+                🖥️ 眸安——智能屏幕健康守护者
               </Title>
               <Text type="secondary" strong>
                 您的人体工学电脑使用健康管理系统，助您保持高效工作的同时维护健康习惯

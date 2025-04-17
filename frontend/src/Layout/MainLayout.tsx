@@ -40,7 +40,7 @@ const MainLayout = () => {
       <Layout style={{ height: "100%", width: "100%" }}>
         <Header style={{ padding: 0 }}>
           <div style={{ color: "white", fontWeight: "bolder", fontSize: 20 }}>
-            healthy use computer
+          “眸安”——智能屏幕健康守护者
           </div>
         </Header>
         <Layout>

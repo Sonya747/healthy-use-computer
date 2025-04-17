@@ -1,5 +1,5 @@
 {
-    "name": "health-use-computer",
+    "name": "眸安——智能屏幕健康守护者",
     "version": "1.0.0",
     "private": true,
     "main": "electron/main.ts",

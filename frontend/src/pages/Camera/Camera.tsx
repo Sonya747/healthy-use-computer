@@ -14,6 +14,7 @@ const Camera = () => {
   const [isCameraOn, setIsCameraOn] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const [playSound] = useSound(sound, { volume: 0.5 });
+  const playRef = useRef(false)
 
   // const [eyeWidth, eyeHeight] = [10, 10]; // TODO :临时的坐标差值骇值
 
@@ -59,7 +60,7 @@ const Camera = () => {
       if(data.detections?.length) {
         //TODO 眼睛处理
       }
-      if(Math.abs(data.position.pitch)>7){
+      if(Math.abs(data.position.pitch)>10){
         playSound(); //TODO 读取设置
         message.info("头部倾斜")
       }
@@ -70,6 +71,7 @@ const Camera = () => {
 
   const stopCamera = async () => {
     if (stream && isCameraOn) {
+      playRef.current=false
       stream.getTracks().forEach((track) => track.stop());
       setStream(null);
       setIsCameraOn(false);
@@ -84,6 +86,9 @@ const Camera = () => {
   };
 
   const startCamera = async () => {
+    if(isCameraOn&&!stream) return;
+    if(playRef.current) return;
+    playRef.current = true
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       setStream(stream);
@@ -95,7 +100,7 @@ const Camera = () => {
       console.log("startSession", res);
       message.success("检测模式开启");
       // 设置定时器，每1s发送一帧
-      intervalRef.current = setInterval(analyzeFrame, 1000);
+      intervalRef.current = setInterval(analyzeFrame, 5000);
     } catch (err) {
       console.error("video stream error", err);
     }
@@ -143,6 +148,7 @@ const Camera = () => {
           }}
           onCanPlay={handleVideoConnect}
           onClick={isCameraOn ? stopCamera : startCamera}
+          onDoubleClick={()=>{}}
         />
 
         {/* 状态指示层 */}

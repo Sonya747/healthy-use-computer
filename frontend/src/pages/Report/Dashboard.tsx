@@ -256,7 +256,7 @@ const Dashboard: React.FC = () => {
                   fill: '#666'
                 }
               },
-              eachView: (view, facet) => {
+              eachView: (_view, facet) => {
                 return {
                   animation: true,
                   axes: facet.rowIndex === 1 ? {} : false
@@ -282,7 +282,7 @@ const Dashboard: React.FC = () => {
             }}
             padding="auto"
             tooltip={{
-              title: (title, datum) => dayjs(datum.date).format('MMM DD'),
+              title: (_title, datum) => dayjs(datum.date).format('MMM DD'),
               fields: ['hour', 'value'],
             }}
             interactions={[{ type: 'element-active' }, { type: 'brush' }]}
@@ -429,7 +429,7 @@ const Dashboard: React.FC = () => {
                 'score': '综合姿势评分'
               }[text])
             },
-            marker: (text, index, item) => ({
+            marker: (text, _index, item) => ({
               symbol: text === 'score' ? 'square' : 'circle',
               style: {
                 fill: text === 'score' ? 'transparent' : item?.color,
