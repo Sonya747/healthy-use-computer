@@ -1,16 +1,15 @@
-import asyncio
 from datetime import date, datetime, timedelta
+import multiprocessing
 from typing import List, Optional
 from fastapi import FastAPI, Body, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
-from dataStorage.crud.usage import AlertCorrelationResponse, DataAccess, DataUpdate, PostureMetricResponse, ScreenSessionResponse
-from cvmodals.eye_predict import predict_eye
+import uvicorn
+from dataStorage.curd import AlertCorrelationResponse, DataAccess, DataUpdate, PostureMetricResponse, ScreenSessionResponse
 from database import Base
 from dataStorage.modals import AlertEvent, ScreenSession, UserSetting
-from cvmodals.predict import process_image
-import os
+from cvmodals.position_predict import process_image
 
 app = FastAPI()
 #数据库配置
@@ -215,6 +214,7 @@ async def add_alert_event(
 
 @app.post("/user-setting")
 async def post_user_settings(data:dict):
+    print(data)
     db = SessionLocal()
     try:
         new_setting = DataUpdate.updateSettings(db=db,data=data)
@@ -236,3 +236,7 @@ async def get_user_settings():
     except Exception as e:
         raise e
     
+
+if __name__ == '__main__':
+    multiprocessing.freeze_support()  # For Windows support
+    uvicorn.run(app, host="0.0.0.0", port=8000, reload=False, workers=1)

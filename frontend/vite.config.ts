@@ -8,6 +8,9 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
       '@assets': path.resolve(__dirname, './src/assets') 
-    }
+    },
+  },
+  build: {
+    outDir: '../electron/dist', // 构建到electron目录
   }
 })

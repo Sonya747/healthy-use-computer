@@ -129,7 +129,6 @@ class DataUpdate:
         try:
         # 检查是否存在现有记录
             existing_setting = db.query(UserSetting).first()
-            
             if existing_setting:
                 # 更新现有记录
                 for key, value in data.items():
@@ -145,8 +144,11 @@ class DataUpdate:
                 db.refresh(existing_setting)
                 return existing_setting
             else:
+                print("not existing")
                 # 创建新记录
-                valid_fields = {'alter_method', 'yall', 'roll'}
+                valid_fields = {'alter_method', 'yall', 'roll',"pitch"}
+                print("key "+key+" value " + value)
+
                 if not all(key in valid_fields for key in data.keys()):
                     db.rollback()
                     raise HTTPException(

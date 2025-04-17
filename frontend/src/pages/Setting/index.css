@@ -1,17 +1,27 @@
-.form-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 16px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
-    height: 100%;
+.settings-card {
+    max-width: 600px;
+    margin: 24px auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
 }
 
-@media (max-width: 600px) {
-    .form-container {
-        padding: 8px;
-    }
+.settings-card:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.form-item-label {
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.85);
+    font-size: 14px;
+}
+
+.ant-form-item {
+    margin-bottom: 24px;
+}
+
+.ant-input-number-lg, 
+.ant-select-lg .ant-select-selector {
+    height: 44px !important;
+    font-size: 16px !important;
 }

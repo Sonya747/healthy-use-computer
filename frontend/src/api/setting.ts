@@ -2,9 +2,7 @@ import { apiClient } from ".";
 import { SettingData } from "../pages/Setting/Setting";
 
 export const postSetting = async (settings: SettingData) => {
-  const response = await apiClient.post<SettingData>("/user-setting", {
-    params: { data: settings },
-  });
+  const response = await apiClient.post<SettingData>("/user-setting",settings);
   return response.data;
 };
 

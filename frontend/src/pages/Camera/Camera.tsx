@@ -16,6 +16,8 @@ const Camera = () => {
   const [playSound] = useSound(sound, { volume: 0.5 });
   const playRef = useRef(false)
 
+  const alerted = []
+
   // const [eyeWidth, eyeHeight] = [10, 10]; // TODO :临时的坐标差值骇值
 
   useEffect(() => {
@@ -60,10 +62,33 @@ const Camera = () => {
       if(data.detections?.length) {
         //TODO 眼睛处理
       }
-      if(Math.abs(data.position.pitch)>10){
-        playSound(); //TODO 读取设置
-        message.info("头部倾斜")
-      }
+      // if(Math.abs(data.position.pitch)>10){
+      if(alerted.length===0){
+        alerted.push('')
+        playSound();
+        message.info({
+            content: <span>⚠️🐢 小龟提醒：检测到头部侧倾啦！端正坐姿可以保护我们的小颈椎哟～😊ﾉ</span>,
+            style: { color: '#ff6b6b' }
+        });
+    }
+    // else if(Math.abs(data.position.roll)>10){
+    else if (alerted.length%3 ===1){
+      alerted.push('')
+        message.info({
+            content: <span>🐢 安全距离警报！太靠近屏幕会让小龟都紧张啦～ 后退一点点吧😄</span>,
+            style: { color: '#ff922b' }
+        });
+    }
+    // else if(Math.abs(data.position.yaw)>10){
+    else if (alerted.length%3 === 2){
+      alerted.push('')
+        message.info({
+            content: <span>🦒 长颈鹿提醒：低头太久脖子会累哦～ 快和我一起抬头挺胸吧！😆</span>,
+            style: { color: '#51cf66' }
+        });
+    }
+    // else{}
+
     } catch (error) {
       console.error("分析失败:", error);
     }
